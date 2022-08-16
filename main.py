@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from tkinter import *
+import tkinter
+import customtkinter
+import requests
+import json
+from PIL import ImageTk,Image
+import os
+
+customtkinter.set_default_color_theme("blue")
+
+titre = "Projet : Prevision Metereologiaue by G7"
+window_height = 700
+window_width = 1000
+#fetch API
+def getDataFromSerceur():
+    URL = "https://io.adafruit.com/api/v2/G7esti/feeds?x-aio-key=aio_wSaS92hOhpyQuJXAFXu2X8HcDBvK"
+    compactdata = [];
+    data = {}
+    result = requests.get(URL).json()
+    # Ceci retournera un tableau d'objet key => valeur
+    for item in result:
+        data = {"key": item['key'], "value": item['last_value']}
+        compactdata.append(data)
+        data = {}
+    # Exemple pour obtenir la temperature ->
+    # 1 -> temperature
+    # 2 -> humidite
+    # 3 -> pression
+    return compactdata
+def condition(temperature,humidite,pression,precipitation):
+    if (temperature <= 22) and (humidite <= 45) and (pression <= 935):
+        return " temps nuageux aujourd'hui"
+    elif pression >= 1000:
+        return "temps ensoleilé aujourd'hui"
+
+    elif ( temperature >= 34) and (humidite >= 35) and (pression >= 935) and precipitation <= 22 :
+        return "temps ensoleilé aujourd'hui"
+    elif ( temperature >= 20) and (humidite >= 35) and (pression >= 935) and precipitation <= 22 :
+        return "temps ensoleilé aujourd'hui"
+    elif (temperature <= 22) and (humidite >= 45) and (pression <= 935) and precipitation >= 30 :
+        return "temps pluvieux aujourd'hui"
+
+
+#affichtext
+def text(app,text,y):
+    label = customtkinter.CTkLabel(master=app,
+                               text=text,
+                               width=220,
+                               height=45,
+                               text_font=("Serif",16),
+                               fg_color=("#5dabe3"),
+                               text_color="white",
+                               corner_radius=0)
+    label.place(relx=0.75, rely=y, anchor=tkinter.CENTER)
+def value(app,text,y):
+    name = customtkinter.CTkLabel(master=app,
+                               text=text,
+                               width=40,
+                               height=45,
+                               text_font=("Serif",16),
+                               fg_color=("white"),
+                               corner_radius=0)
+    name.place(relx=0.95, rely=y, anchor=tkinter.CENTER)
+    return name
+#button controller
+
+
+        
+def mainofTheProgram():
+    app = customtkinter.CTk()
+    app.title(titre)
+    app.resizable(False,False)
+    #centrer la fenetre
+    screen_width = app.winfo_screenwidth()
+    screen_height = app.winfo_screenheight()
+
+    x_cordinate = int((screen_width/2) - (window_width/2))
+    y_cordinate = int((screen_height/2) - (window_height/2))
+    #end
+    app.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+    #data
+    data = getDataFromSerceur()
+    print(data)
+    #mes textes
+    img = ImageTk.PhotoImage(Image.open("background.jpg").resize((window_width,window_height)))
+    panel = customtkinter.CTkLabel(master=app,
+                               width=window_width,
+                               height=window_height,
+                               image = img,
+                               fg_color=("white", "gray75"),
+                               corner_radius=8)
+    panel.place(relx=0.5, rely=0.5, anchor=tkinter.CENTER)
+    
+    text(app,"Temperature",0.075)
+    temp = customtkinter.CTkLabel(master=app,
+                               text="12",
+                               width=100,
+                               height=45,
+                               text_font=("Serif",16),
+                               fg_color=("white"),
+                               corner_radius=0)
+    temp.place(relx=0.95, rely=0.075, anchor=tkinter.CENTER)
+    temp.config(text = "56")
+    text(app,"Humidite",0.150-0.010)
+    hum = customtkinter.CTkLabel(master=app,
+                               text="0",
+                               width=100,
+                               height=45,
+                               text_font=("Serif",16),
+                               fg_color=("white"),
+                               corner_radius=0)
+    hum.place(relx=0.95, rely=0.150-0.010, anchor=tkinter.CENTER)
+    text(app,"Precipitation",0.225-0.020)
+    prec = customtkinter.CTkLabel(master=app,
+                               text="0",
+                               width=100,
+                               height=45,
+                               text_font=("Serif",16),
+                               fg_color=("white"),
+                               corner_radius=0)
+    prec.place(relx=0.95, rely=0.225-0.020, anchor=tkinter.CENTER)
+    text(app,"Pression Atmospherique",0.3-0.030)
+    pres = customtkinter.CTkLabel(master=app,
+                               text="0",
+                               width=100,
+                               height=45,
+                               text_font=("Serif",16),
+                               fg_color=("white"),
+                               corner_radius=0)
+    pres.place(relx=0.95, rely=0.3-0.030, anchor=tkinter.CENTER)
+    for item in data:
+        if(item['key'] == "temp"):
+            temp.configure(text=(item['value']))
+            temp_val = item['value']
+        elif(item['key'] == "hum"):
+            hum.configure(text=item['value'])
+            hum_val = item['value']
+        elif(item['key'] == "gaz"):
+            prec.configure(text=item['value'])
+            prec_val = item['value']
+        elif(item['key'] == "press"):
+            pres.configure(text=item['value'])  
+            pres_val = item['value']
+    
+    temp_actuel = condition(float(temp_val), float(hum_val), float(pres_val), float(prec_val))
+    pred = customtkinter.CTkLabel(master=app,
+                               text=temp_actuel,
+                               width=500,
+                               height=45,
+                               text_font=("Serif",42),
+                               fg_color=("white"),
+                               text_color="#5dabe3",
+                               corner_radius=0)
+    pred.place(relx=0.5, rely=0.85, anchor=tkinter.CENTER)
+    
+    #esti logo
+    logo = ImageTk.PhotoImage(Image.open("esti.png").resize((100,75)))
+    panelLogo = customtkinter.CTkLabel(master=app,
+                               width=100,
+                               height=75,
+                               image = logo,
+                               fg_color="white",
+                               corner_radius=8)
+    panelLogo.place(relx=0.075, rely=0.075, anchor=tkinter.CENTER)
+    def refresh():
+        print("refreshing ...")
+        data = getDataFromSerceur()
+        for item in data:
+            if(item['key'] == "temp"):
+                temp.configure(text=(item['value']))
+                temp_val = item['value']
+            elif(item['key'] == "hum"):
+                hum.configure(text=item['value'])
+                hum_val = item['value']
+            elif(item['key'] == "gaz"):
+                prec.configure(text=item['value'])
+                prec_val = item['value']
+            elif(item['key'] == "press"):
+                pres.configure(text=item['value'])  
+                pres_val = item['value']
+            print(item)    
+        condition(float(temp_val), float(hum_val), float(pres_val), float(prec_val))
+        pred.after(10000,refresh)
+    refresh()
+    app.mainloop()
+      
+    
+    
+def button_function(actualwindow):
+    fenetre.destroy()
+    mainofTheProgram()
+
+# Use CTkButton instead of tkinter Button
+
+if __name__ == "__main__":
+    fenetre = customtkinter.CTk()
+    fenetre.title(titre)
+    fenetre.resizable(False,False)
+    #centrer la fenetre
+    screen_width = fenetre.winfo_screenwidth()
+    screen_height = fenetre.winfo_screenheight()
+
+    x_cordinate = int((screen_width/2) - (window_width/2))
+    y_cordinate = int((screen_height/2) - (window_height/2))
+    #end
+    #ajouter une image
+    img = ImageTk.PhotoImage(Image.open("rainDemarage.png").resize((400,400)))
+    panel = Label(fenetre,image = img)
+    panel.pack(side = "top",fill="both",expand = "yes")
+    #end
+    #button
+    button = customtkinter.CTkButton(master=fenetre,width=200,height=50,border_width=0,corner_radius=2,text_color="white",text_font=("Serif",20), text="Commencer", command=lambda:button_function(fenetre))
+    button.place(relx=0.5, rely=0.8, anchor=tkinter.CENTER)
+    #end
+    fenetre.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
+    label = Label(fenetre,text="powered by Esti G7")
+    label.pack()
+    
+    
+    fenetre.mainloop()
+    #afficher la fenetre
+    

@@ -1,0 +1,25 @@
+import serial
+from io import StringIO
+import time
+py = serial.Serial('COM5', 9600)
+
+user = 'G7esti'
+key = 'aio_wSaS92hOhpyQuJXAFXu2X8HcDBvK'
+while 1:
+    from Adafruit_IO import Client, Feed, Data
+    aio = Client(user,key)
+    data = py.readline().decode()
+    if "precipitation" in data:
+        data5 = data.split()
+        dataPr = data5[1]
+        aio.send("precipite2", dataPr)
+        current_temp = aio.receive("precipite2").value
+        print(current_temp)
+
+
+
+
+    time.sleep(2)
+
+
+

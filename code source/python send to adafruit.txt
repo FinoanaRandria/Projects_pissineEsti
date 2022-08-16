@@ -1,0 +1,57 @@
+import serial
+from io import StringIO
+import time
+py = serial.Serial('COM6', 9600)
+
+user = 'G7esti'
+key = 'aio_wSaS92hOhpyQuJXAFXu2X8HcDBvK'
+while 1:
+    from Adafruit_IO import Client, Feed, Data
+    aio = Client(user,key)
+    data = py.readline().decode()
+    if "precipitation" in data:
+        data5 = data.split()
+        dataPr = data5[1]
+        aio.send("gaz", dataPr)
+        current_temp = aio.receive("gaz").value
+        print(current_temp)
+
+    if "Pression" in data:
+        data4 = data.split()
+        dataP = data4[1]
+        aio.send("press", dataP)
+        current_temp = aio.receive("press").value
+        print(current_temp)
+
+
+    #data = StringIO(data)
+    if "humidite" in data :
+        data1 = data.split()
+        dataH = data1[1]
+        print(dataH)
+        aio.send("hum", dataH)
+        current_temp = aio.receive("hum").value
+        print(current_temp)
+
+
+    #print("fffhf"+data)
+    if "température" in data :
+        data3 = data.split()
+        dataT = data3[1]
+        aio.send("temp", dataT)
+        current_temp = aio.receive("temp").value
+        print(current_temp)
+
+    if "gaz" in data :
+        data2 = data.split()
+        dataG = int(data2[1])
+        aio.send("precipite", dataG)
+        current_temp = aio.receive("precipite").value
+        print(current_temp)
+
+
+
+    time.sleep(2)
+
+
+

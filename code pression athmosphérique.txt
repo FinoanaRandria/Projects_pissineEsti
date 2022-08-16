@@ -1,0 +1,29 @@
+#include<math.h>
+#include<conio.h>
+#include<stdio.h>
+float temp,R,n,m,M,V,p,K,G,m1,m2,P1,P;
+
+
+
+void main()
+{
+printf("Temp=");
+scanf("%f", &temp);
+K = temp+217.15;
+
+G=K*8.314*12;
+printf("m1=");
+scanf("%f", &m1);
+m=m1 ;
+M=44;
+n=m/M;
+p=n*G ;
+P=p/234.934;
+P1=P*1000;
+printf("pression athmospherique=%3.2f",P1);
+
+
+
+
+getch();
+}

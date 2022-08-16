@@ -1,0 +1,93 @@
+#include "DHT.h"
+
+#define DHTPIN 2   
+
+#define DHTTYPE DHT22  
+
+DHT dht(DHTPIN, DHTTYPE);
+#include<Wire.h>
+#include<LiquidCrystal_I2C.h>
+#define PinAnalogiqueHumidite 0
+LiquidCrystal_I2C lcd(0x3F,20,4);
+int pourcentage=0;
+int hsol;
+void setup(){
+  Serial.begin(9600);
+  Serial.println("DHTxx test!");
+  dht.begin();
+  pinMode(A1, INPUT);
+ 
+
+  pinMode(PinAnalogiqueHumidite, INPUT);
+  
+  
+}
+void loop(){  
+  int gaz_pin=A1;
+  int gaz;
+  float P;
+  float volume, prec2,precipitation,prec3,volume2;
+  P= getTemp("c")*29.889572349;
+  Serial.print("Pression: ");
+  Serial.println(P);
+  Serial.print("température: ");
+  Serial.println(getTemp("c"));   
+  gaz = analogRead(A1);
+  Serial.print("gaz: ");
+  Serial.println(gaz);
+  hsol = analogRead(PinAnalogiqueHumidite);
+  pourcentage = conversion(hsol);
+
+  volume=pourcentage*0.075;
+  volume2=volume/0.6;
+  prec3=volume2*100;
+  precipitation=prec3/10.5;
+  
+  Serial.print("precipitation: ");
+  Serial.println (precipitation);
+  Serial.print("humidite: ");
+  Serial.println(pourcentage); 
+  
+  
+  delay(500);
+  
+  
+  
+}
+float getTemp(String req)
+{
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  float f = dht.readTemperature(true);
+  float hif = dht.computeHeatIndex(f, h);
+  float hic = dht.computeHeatIndex(t, h, false);
+
+  if (isnan(h) || isnan(t) || isnan(f)){
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+  float k = t + 273.15;
+  if(req =="c"){
+    return t;
+  }else if(req =="f"){
+    return f;
+  }else if(req =="h"){
+    return h;
+  }else if(req =="hif"){
+    return hif;
+  }else if(req =="hic"){
+    return hic;
+   }else if(req =="k"){
+    return k;  
+   }
+   else{
+      return 0.000;
+   }
+}
+int conversion(int value){
+ int valeurPourcentage=0; 
+ valeurPourcentage= map(value, 1023, 0, 0, 100);
+ return valeurPourcentage;
+  
+  
+ }
